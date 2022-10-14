@@ -1,9 +1,14 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import { PrismaClient, User } from "@prisma/client";
+import type { GetStaticProps, NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
 
-const Home: NextPage = () => {
+type Props = {
+  users: User[];
+};
+
+const Home: NextPage<Props> = ({ users }) => {
   return (
     <div className={styles.container}>
       <Head>
@@ -14,13 +19,26 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Welcome to <a href="https://nextjs.org">Next.js</a> +{" "}
+          <a href="https://www.prisma.io/">Prisma</a>
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
+          Get started by editing{" "}
           <code className={styles.code}>pages/index.tsx</code>
         </p>
+
+        <p>
+          Display prisma data with
+          <code className={styles.code}>getStaticProps</code>
+        </p>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {users.map((user) => (
+            <span key={user.id}>
+              {user.name}: {user.email}
+            </span>
+          ))}
+        </div>
 
         <div className={styles.grid}>
           <a href="https://nextjs.org/docs" className={styles.card}>
@@ -59,14 +77,23 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
           </span>
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
+
+export const getStaticProps: GetStaticProps<Props> = async () => {
+  const prisma = new PrismaClient();
+  const users = await prisma.user.findMany();
+
+  return {
+    props: { users },
+  };
+};
